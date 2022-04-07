@@ -117,13 +117,25 @@ print ("Writing .csv...")
 with open('cleanData.csv', 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow(["Datum","Anzahl Konferenzen","Nutzer:innen"])
+    spamwriter.writerow(["Datum","Gesamt Konferenzen","Konferenzen ohne Interne", "Anteil Interne Konferenzen an Gesamt"
+    "Gesamt Nutzer:innen", "Nutzer:Innen ohne Interne", "Anteil Interne Nutzer:Innen an Gesamt"])
     for entry in DataWithoutInternal:
         konferenzcount = 0
         usercount = set()
         for konferenz in entry[1]:
             konferenzcount += 1
             usercount.update(konferenz.user)
+        for element in Data: # also add the numbers of konferenzen with internal
+            if element[0] == entry[0]:
+                konferenzcountWithInternal = 0
+                usercountWithInternal = set()
+                for konferenzWithInternal in element[1]:
+                    konferenzcountWithInternal += 1
+                    usercountWithInternal.update(konferenzWithInternal.user)
 
         if konferenzcount  != 0:
-            spamwriter.writerow([entry[0],konferenzcount,len(usercount)])
+            prozentKonferenzen = round((konferenzcountWithInternal-konferenzcount)/konferenzcountWithInternal*100,2)
+            prozentUser =  round((len(usercountWithInternal)-len(usercount))/len(usercountWithInternal)*100,2)
+
+            spamwriter.writerow([entry[0],konferenzcountWithInternal,konferenzcount,str(prozentKonferenzen) + "%",
+            len(usercountWithInternal),len(usercount),str(prozentUser) + "%"]) 
