@@ -117,7 +117,7 @@ print ("Writing .csv...")
 with open('cleanData.csv', 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow(["Datum","Gesamt Konferenzen","Konferenzen ohne Interne", "Anteil Interne Konferenzen an Gesamt"
+    spamwriter.writerow(["Datum","Gesamt Konferenzen","Konferenzen ohne Interne", "Anteil Interne Konferenzen an Gesamt",
     "Gesamt Nutzer:innen", "Nutzer:Innen ohne Interne", "Anteil Interne Nutzer:Innen an Gesamt"])
     for entry in DataWithoutInternal:
         konferenzcount = 0
