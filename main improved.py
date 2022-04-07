@@ -3,6 +3,24 @@
 import csv
 import sys
 
+class BlacklistReader(object):
+    #Reads and Stores a List of Konferenzen that is just used internaly and or for testing purposes to keep the stats clean
+    def __init__(self):
+        self.blacklist = []
+        self.readBlacklist()
+
+    def readBlacklist(self):
+        with open('interneTagungen.txt',encoding='utf-8') as f:
+            for line in f:
+                element = line.strip()
+                self.blacklist.append(element)
+        print ("%s interne Tagungen gefunden" % len(self.blacklist))
+
+    def isInternal(self,name):
+        if name.strip() in self.blacklist:
+            return True
+        else:
+            return False
 
 class Konferenz(object):
     def __init__(self):
@@ -11,6 +29,7 @@ class Konferenz(object):
         self.test = False
         self.portalpartner = ""
         self.creatorLan = ""
+        self.internal = False
 
     def getUserNumber(self):
         return len(self.user)
@@ -25,6 +44,7 @@ class FilterListe(object):
     def __init__(self):
         konferenznamen =[]
 
+mBlacklist = BlacklistReader()
 csv.field_size_limit(100000000) # increase limit so no crash happens
 lastday = ""
 Data  = []
@@ -55,6 +75,7 @@ with open('data.csv',encoding='utf-8',newline='') as csvfile:
                         mKonferenz.portalpartner = row[2]
                         mKonferenz.creatorLan = row[3]
                         mKonferenz.user.add(row[5])
+                        mKonferenz.internal = mBlacklist.isInternal(mKonferenz.name)
                         datum[1].append(mKonferenz)
                     entryExists = True
             if entryExists == False:
@@ -70,22 +91,31 @@ with open('data.csv',encoding='utf-8',newline='') as csvfile:
         #if i >= 100:
             #break 
         i+=1
-#remove konferenzes with only 1 participant
-
+#remove konferenzes marked internal
+DataWithoutInteral = []
 for entry in Data:
+    for konferenz in entry[1]:
+        if konferenz.internal == True:
+            print ("%s entfernt da interne Tagung" % konferenz.name)
+        else:
+            DataWithoutInteral.append(entry)
+
+#remove konferenzes with only 1 participant
+for entry in DataWithoutInteral:
     newList = []
     for konferenz in entry[1]:
         if len(konferenz.user) > 1:
             newList.append(konferenz)
         entry[1] = newList
-#remove days without konferenzes ?     
+#remove days without konferenzes ? 
+
 #write csv
 print ("Writing .csv...")
 with open('cleanData.csv', 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow(["Datum","Anzahl Konferenzen","Nutzer:innen"])
-    for entry in Data:
+    for entry in DataWithoutInteral:
         konferenzcount = 0
         usercount = set()
         for konferenz in entry[1]:
