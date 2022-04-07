@@ -2,6 +2,7 @@
 
 import csv
 import sys
+import copy
 
 class BlacklistReader(object):
     #Reads and Stores a List of Konferenzen that is just used internaly and or for testing purposes to keep the stats clean
@@ -101,7 +102,7 @@ for entry in Data:
 #remove days without konferenzes ? 
 
 #remove konferenzes marked internal
-DataWithoutInternal = Data # new List in case comparison is wanted between data with internal and not
+DataWithoutInternal = copy.deepcopy(Data)# new List in case comparison is wanted between data with internal removed and not removed
 for entry in DataWithoutInternal:
     newList =[]
     for konferenz in entry[1]:
@@ -117,11 +118,10 @@ with open('cleanData.csv', 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow(["Datum","Anzahl Konferenzen","Nutzer:innen"])
-    for entry in Data:
+    for entry in DataWithoutInternal:
         konferenzcount = 0
         usercount = set()
         for konferenz in entry[1]:
-            #print (entry[0] + " " + konferenz.name)
             konferenzcount += 1
             usercount.update(konferenz.user)
 
