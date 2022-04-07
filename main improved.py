@@ -88,20 +88,11 @@ with open('data.csv',encoding='utf-8',newline='') as csvfile:
                 
                 Data.append([day,[mKonferenz]])
         #Debug break
-        #if i >= 100:
+        #if i >= 50:
             #break 
         i+=1
-#remove konferenzes marked internal
-DataWithoutInteral = []
-for entry in Data:
-    for konferenz in entry[1]:
-        if konferenz.internal == True:
-            print ("%s entfernt da interne Tagung" % konferenz.name)
-        else:
-            DataWithoutInteral.append(entry)
-
 #remove konferenzes with only 1 participant
-for entry in DataWithoutInteral:
+for entry in Data:
     newList = []
     for konferenz in entry[1]:
         if len(konferenz.user) > 1:
@@ -109,13 +100,24 @@ for entry in DataWithoutInteral:
         entry[1] = newList
 #remove days without konferenzes ? 
 
+#remove konferenzes marked internal
+DataWithoutInternal = Data # new List in case comparison is wanted between data with internal and not
+for entry in DataWithoutInternal:
+    newList =[]
+    for konferenz in entry[1]:
+        if konferenz.internal == True:
+            print ("%s entfernt da interne Tagung" % konferenz.name)
+        else:
+            newList.append(konferenz)
+        entry[1] = newList
+
 #write csv
 print ("Writing .csv...")
 with open('cleanData.csv', 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow(["Datum","Anzahl Konferenzen","Nutzer:innen"])
-    for entry in DataWithoutInteral:
+    for entry in Data:
         konferenzcount = 0
         usercount = set()
         for konferenz in entry[1]:
