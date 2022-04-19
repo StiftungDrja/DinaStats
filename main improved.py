@@ -3,6 +3,18 @@
 import csv
 import sys
 import copy
+import sqlite3 as sl
+
+class DatabaseManager(object):
+    def __init__(self):
+        self.con = sl.connect('stlDatabase.db')
+        self.c = self.con.cursor()
+        self.checkTables()
+
+    def checkTables(self):
+        #mostly needed for first startup to create tables
+        self.c.execute('create table if not exists "Tagungen" (name STRING PRIMARY KEY)')
+        pass
 
 class BlacklistReader(object):
     #Reads and Stores a List of Konferenzen that is just used internaly and or for testing purposes to keep the stats clean
@@ -46,6 +58,8 @@ class FilterListe(object):
         konferenznamen =[]
 
 mBlacklist = BlacklistReader()
+mDatabase = DatabaseManager()
+
 csv.field_size_limit(100000000) # increase limit so no crash happens
 lastday = ""
 Data  = []
@@ -112,7 +126,7 @@ for entry in DataWithoutInternal:
             newList.append(konferenz)
         entry[1] = newList
 
-#write csv
+#write csv TODO: add routine for agregated montly data
 print ("Writing .csv...")
 with open('cleanData.csv', 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
