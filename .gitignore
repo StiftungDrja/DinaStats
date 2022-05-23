@@ -1,4 +1,6 @@
 data.csv
 cleanData.csv
+data_old.csv
+data_test.csv
 interneTagungen.txt
 stlDatabase.db

@@ -13,7 +13,8 @@ class DatabaseManager(object):
 
     def checkTables(self):
         #mostly needed for first startup to create tables
-        self.c.execute('create table if not exists "Tagungen" (name STRING PRIMARY KEY)')
+        # Primary Key should be url (name is not unique)
+        # self.c.execute('create table if not exists "Tagungen" (name STRING PRIMARY KEY)')
         pass
 
 class BlacklistReader(object):
@@ -81,15 +82,18 @@ with open('data.csv',encoding='utf-8',newline='') as csvfile:
                     konferenzExists = False
                     for konferenz in datum[1]:
                         if konferenz.name == row[1].strip():
-                            konferenz.user.add(row[5])
+                            print("Add user " + row[6] + " to " + konferenz.name)
+                            print ("Now " + str(len(konferenz.user)))
+                            konferenz.user.add(row[6])
                             konferenzExists = True
                     if konferenzExists ==  False:
                         #create konferenz
+                        print ("Create Conference: " + row[1].strip() + " " + day)
                         mKonferenz = Konferenz()
                         mKonferenz.name = row[1].strip()
-                        mKonferenz.portalpartner = row[2]
-                        mKonferenz.creatorLan = row[3]
-                        mKonferenz.user.add(row[5])
+                        mKonferenz.portalpartner = row[3]
+                        mKonferenz.creatorLan = row[4]
+                        mKonferenz.user.add(row[6])
                         mKonferenz.internal = mBlacklist.isInternal(mKonferenz.name)
                         datum[1].append(mKonferenz)
                     entryExists = True
@@ -97,9 +101,9 @@ with open('data.csv',encoding='utf-8',newline='') as csvfile:
                 #create conference
                 mKonferenz = Konferenz()
                 mKonferenz.name = row[1]
-                mKonferenz.portalpartner = row[2]
-                mKonferenz.creatorLan = row[3]
-                mKonferenz.user.add(row[5])
+                mKonferenz.portalpartner = row[3]
+                mKonferenz.creatorLan = row[4]
+                mKonferenz.user.add(row[6])
                 
                 Data.append([day,[mKonferenz]])
         #Debug break
@@ -112,6 +116,9 @@ for entry in Data:
     for konferenz in entry[1]:
         if len(konferenz.user) > 1:
             newList.append(konferenz)
+            print ("add konferenze " + konferenz.name + " " + entry[0] + " size: " + str(len(konferenz.user)))
+        else:
+            print ("remove Konferenze because of size: " + konferenz.name + " " + entry[0] + " size: " + str(len(konferenz.user)))
         entry[1] = newList
 #remove days without konferenzes ? 
 
