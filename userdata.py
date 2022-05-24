@@ -1,3 +1,4 @@
+import datetime
 import glob
 import csv
 import sqlite3 
@@ -63,13 +64,19 @@ class UserManager(object):
        
     def updateInteraction(self,id,interaction_date):
         #create table for storing login times
-        if self.userInteractionExists(id,interaction_date) == False: #no entry create 
+        if self.userInteractionExists(id,self.LastLoginToDate(str(interaction_date))) == False: #no entry create 
             with self.con:
-                self.c.execute("INSERT INTO interaction(id,date) Values (?,?)",(id,interaction_date.split()[0]))
+                
+                self.c.execute("INSERT INTO interaction(id,date) Values (?,?)",(id,self.LastLoginToDate(str(interaction_date))))
         else:
             pass
+        
                 
     def LastLoginToDate(self,interaction_date):
         #Logins are stored as Dates since last Login, for the database we need a date in
         #YYYY-MM-DD
-        pass 
+        #current date
+        currentDate = datetime.date.today()
+        days = datetime.timedelta(days=(int(interaction_date)))
+        return currentDate - days
+
