@@ -11,8 +11,7 @@ class UserManager(object):
 
     def filereader(self):
         #reads the user-activity-report[...].csv file 
-        activityReport = glob.glob('user-activity-report*')
-       
+        activityReport = glob.glob('user-activity-report*')  
         with open(activityReport[0],encoding='utf-8',newline='') as csvfile:
             userreader = csv.reader(csvfile, delimiter=',', quotechar='"')
             #colum 0 = id
@@ -25,8 +24,19 @@ class UserManager(object):
                     if self.userHashExist(row[0]) == False: #create user if not allready in database
                         self.createUser(row[0],row[9])
                     #update users login
-                    self.updateInteraction(row[0],row[7])
+                    self.updateInteraction(row[0],row[7],"User-Activity")
 
+                i +=1
+        #also read bbb-rooms visit, for more user interactions 
+        BBBRoomVisits = glob.glob('bbb-room-visits*')
+        with open(BBBRoomVisits[0],encoding="utf-8",newline='') as csvfile:      
+            bbbroomreader = csv.reader(csvfile,delimiter=',',quotechar='"')
+            i = 0
+            for row in bbbroomreader:
+                if i != 0:
+                    #colum 6 = id
+                    #colum 0 = date
+                    self.updateInteractionNoTransform(row[6],row[0].split()[0],"BBB-Room-Visits")
                 i +=1
 
     def userHashExist(self,id):
@@ -62,16 +72,22 @@ class UserManager(object):
         else: 
             print ("User {0} allready exists".format(id))
        
-    def updateInteraction(self,id,interaction_date):
+    def updateInteraction(self,id,interaction_date,source):
         #create table for storing login times
         if self.userInteractionExists(id,self.LastLoginToDate(str(interaction_date))) == False: #no entry create 
-            with self.con:
-                
-                self.c.execute("INSERT INTO interaction(id,date) Values (?,?)",(id,self.LastLoginToDate(str(interaction_date))))
+            with self.con:            
+                self.c.execute("INSERT INTO interaction(id,date,Source) Values (?,?,?)",(id,self.LastLoginToDate(str(interaction_date)),source))
         else:
             pass
-        
-                
+
+    def updateInteractionNoTransform(self,id,interaction_date,source):
+        #create table for storing login times
+        if self.userInteractionExists(id,interaction_date) == False: #no entry create 
+            with self.con:            
+                self.c.execute("INSERT INTO interaction(id,date,Source) Values (?,?,?)",(id,interaction_date,source))
+        else:
+            pass
+                    
     def LastLoginToDate(self,interaction_date):
         #Logins are stored as Dates since last Login, for the database we need a date in
         #YYYY-MM-DD
